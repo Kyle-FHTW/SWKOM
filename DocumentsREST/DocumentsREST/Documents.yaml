@@ -1,0 +1,104 @@
+openapi: 3.0.0
+info:
+  title: Documents API
+  version: 1.0.0
+paths:
+  /:
+    get:
+      summary: Get all documents
+      responses:
+        '200':
+          description: A list of documents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Document'
+  /documents/{id}:
+    get:
+      summary: Get a document by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: A single document
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '404':
+          description: Document not found
+    put:
+      summary: Update a document by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Document'
+      responses:
+        '200':
+          description: Document updated
+        '404':
+          description: Document not found
+    delete:
+      summary: Delete a document by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Document deleted
+        '404':
+          description: Document not found
+  /documents:
+    post:
+      summary: Create a new document
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Document'
+      responses:
+        '201':
+          description: Document created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+components:
+  schemas:
+    Document:
+      type: object
+      properties:
+        Id:
+          type: integer
+        Title:
+          type: string
+        Metadata:
+          type: string
+        Description:
+          type: string
+        TagsAssigned:
+          type: array
+          items:
+            type: string
+            enum:
+              - tag1
+              - tag2
+              - tag3
