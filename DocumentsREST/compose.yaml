@@ -11,6 +11,7 @@ services:
   server:
     build:
       context: .
+      dockerfile: DocumentsREST/Dockerfile
       target: final
     ports:
       - 8081:8080
