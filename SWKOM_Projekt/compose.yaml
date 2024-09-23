@@ -9,6 +9,7 @@
 # https://github.com/docker/awesome-compose
 services:
   server:
+    container_name : DocumentsREST
     build:
       context: .
       dockerfile: DocumentsREST/Dockerfile
@@ -54,6 +55,7 @@ services:
 
 
   webui:
+    container_name : DocumentsWebUI
     image: webui
     build:
       context: .
