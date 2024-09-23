@@ -14,7 +14,7 @@ namespace DocumentsREST.Controllers
             new Document { Id = 2, Title = "Document 2", Metadata = "Metadata 2", Description = "Description 2" }
         };
 
-        [HttpGet]
+        [HttpGet("documents")]
         public ActionResult<IEnumerable<Document>> Get()
         {
             return Ok(documents);
