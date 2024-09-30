@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Document</title>
+    <title>Edit Document</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
-<body>
+<body onload="loadDocumentData()">
 <div class="container mt-5">
     <div class="text-center">
-        <h1 class="display-4">Add New Document</h1>
+        <h1 class="display-4">Edit Document</h1>
         <form id="documentForm">
             <div class="form-group">
                 <label for="title">Title:</label>
@@ -23,10 +23,10 @@
                 <label for="description">Description:</label>
                 <textarea id="description" class="form-control"></textarea>
             </div>
-            <button type="button" onclick="addDocument()" class="btn btn-primary">Add Document</button>
+            <button type="button" onclick="updateDocument()" class="btn btn-primary">Update Document</button>
         </form>
     </div>
 </div>
-<script src="addDocuments.js"></script>
+<script src="editDocuments.js"></script>
 </body>
 </html>

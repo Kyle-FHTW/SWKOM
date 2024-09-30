@@ -34,7 +34,14 @@ function loadDocuments() {
                 deleteButton.className = 'btn btn-danger btn-sm'; // Bootstrap classes
                 deleteButton.onclick = () => deleteDocument(doc.id); // Attach delete function
 
+                // Create an edit button with Bootstrap styling
+                const editButton = document.createElement('button');
+                editButton.textContent = 'Edit';
+                editButton.className = 'btn btn-warning btn-sm'; // Bootstrap classes
+                editButton.onclick = () => editDocument(doc); // Attach edit function
+
                 const actionCell = document.createElement('td');
+                actionCell.appendChild(editButton);
                 actionCell.appendChild(deleteButton);
                 row.appendChild(actionCell);
 
@@ -46,55 +53,6 @@ function loadDocuments() {
             console.error('There was a problem with the fetch operation:', error);
             errorElement.textContent = 'Failed to load documents. Please try again later.';
             errorElement.style.display = 'block';
-        });
-}
-
-// Function to add a new document via POST request
-function addDocument() {
-    // Get form values
-    const title = document.getElementById('title').value;
-    const metadata = document.getElementById('metadata').value;
-    const description = document.getElementById('description').value;
-
-    // Validate the title (optional, but we'll alert if empty)
-    if (title.trim() === '') {
-        alert('Please enter a title for the document');
-        return;
-    }
-
-    // Generate a new ID for the document (for example, using the current timestamp)
-    const newId = Date.now(); // Simple unique ID generation
-
-    // Create a new document object
-    const newDocument = {
-        id: newId,  // Assign the generated ID
-        title: title,
-        metadata: metadata,
-        description: description,
-    };
-
-    // Send the document object to the API
-    fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(newDocument)
-    })
-        .then(response => {
-            if (response.ok) {
-                alert('Document added successfully!');
-                // Redirect to the index page after successful submission
-                window.location.href = 'Index.html';
-            } else {
-                return response.json().then(err => {
-                    alert('Error: ' + err.message);
-                });
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while submitting the document.');
         });
 }
 
@@ -117,6 +75,12 @@ function deleteDocument(id) {
             console.error('Error:', error);
             alert('An error occurred while deleting the document.');
         });
+}
+
+// Function to edit a document
+function editDocument(doc) {
+    // Redirect to editDocuments.html with the document ID as a query parameter
+    window.location.href = `editDocuments.html?id=${doc.id}`;
 }
 
 // Load documents when the page is loaded
