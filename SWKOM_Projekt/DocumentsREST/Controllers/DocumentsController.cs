@@ -21,7 +21,7 @@ namespace DocumentsREST.Controllers
         }
 
         [HttpGet("documents/{id}")]
-        public ActionResult<Document> Get(int id)
+        public ActionResult<Document> Get(long id)
         {
             var document = documents.Find(d => d.Id == id);
             if (document == null)
@@ -39,7 +39,7 @@ namespace DocumentsREST.Controllers
         }
 
         [HttpPut("documents/{id}")]
-        public ActionResult Put(int id, [FromBody] Document updatedDocument)
+        public ActionResult Put(long id, [FromBody] Document updatedDocument)
         {
             var document = documents.Find(d => d.Id == id);
             if (document == null)
@@ -53,7 +53,7 @@ namespace DocumentsREST.Controllers
         }
 
         [HttpDelete("documents/{id}")]
-        public ActionResult Delete(int id)
+        public ActionResult Delete(long id)
         {
             var document = documents.Find(d => d.Id == id);
             if (document == null)

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Document</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="container mt-5">
+    <div class="text-center">
+        <h1 class="display-4">Add New Document</h1>
+        <form id="documentForm">
+            <div class="form-group">
+                <label for="title">Title:</label>
+                <input type="text" id="title" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="metadata">Metadata:</label>
+                <input type="text" id="metadata" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="description">Description:</label>
+                <textarea id="description" class="form-control"></textarea>
+            </div>
+            <button type="button" onclick="addDocument()" class="btn btn-primary">Add Document</button>
+        </form>
+    </div>
+</div>
+<script src="site.js"></script>
+</body>
+</html>
