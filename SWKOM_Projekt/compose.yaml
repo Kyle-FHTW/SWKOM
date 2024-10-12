@@ -1,15 +1,8 @@
-# Comments are provided throughout this file to help you get started.
-# If you need more help, visit the Docker Compose reference guide at
-# https://docs.docker.com/go/compose-spec-reference/
+version: '3.8'  # Specify Docker Compose file version
 
-# Here the instructions define your application as a service called "server".
-# This service is built from the Dockerfile in the current directory.
-# You can add other services your application may depend on here, such as a
-# database or a cache. For examples, see the Awesome Compose repository:
-# https://github.com/docker/awesome-compose
 services:
   server:
-    container_name : DocumentsREST
+    container_name: DocumentsREST
     build:
       context: .
       dockerfile: DocumentsREST/Dockerfile
@@ -17,53 +10,56 @@ services:
     ports:
       - 8081:8081
     environment:
-        - ASPNETCORE_ENVIRONMENT=Development
-        - ASPNETCORE_URLS=http://+:8081
-
-# The commented out section below is an example of how to define a PostgreSQL
-# database that your application can use. `depends_on` tells Docker Compose to
-# start the database before your application. The `db-data` volume persists the
-# database data between container restarts. The `db-password` secret is used
-# to set the database password. You must create `db/password.txt` and add
-# a password of your choosing to it before running `docker compose up`.
-#     depends_on:
-#       db:
-#         condition: service_healthy
-#   db:
-#     image: postgres
-#     restart: always
-#     user: postgres
-#     secrets:
-#       - db-password
-#     volumes:
-#       - db-data:/var/lib/postgresql/data
-#     environment:
-#       - POSTGRES_DB=example
-#       - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
-#     expose:
-#       - 5432
-#     healthcheck:
-#       test: [ "CMD", "pg_isready" ]
-#       interval: 10s
-#       timeout: 5s
-#       retries: 5
-# volumes:
-#   db-data:
-# secrets:
-#   db-password:
-#     file: db/password.txt
-
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8081
+      - ConnectionStrings__DefaultConnection=Host=db;Database=DocumentsDB;Username=postgres;Password=postgres  # Connection string to the PostgreSQL database
+    depends_on:
+      db:
+        condition: service_healthy  # Wait for the database service to be ready before starting
+    networks:
+      - documents-network  # Ensure communication between server and db
+  
+  db:
+    container_name: DocumentsDB
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: DocumentsDB
+    ports:
+      - 5432:5432  # Expose PostgreSQL port
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]  # Check PostgreSQL health
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres-data:/var/lib/postgresql/data  # Persist PostgreSQL data across container restarts
+      - ./dbinit:/docker-entrypoint-initdb.d  # Mount the init.sql and run-init.sh scripts
+    networks:
+      - documents-network  # Connect to the shared network
 
   webui:
-    container_name : DocumentsWebUI
+    container_name: DocumentsWebUI
     image: webui
     build:
       context: .
       dockerfile: WebUI/Dockerfile
     ports:
-        - 80:80
+      - 80:80  # Expose port 80 for the web UI
     volumes:
-        - ./WebUI/nginx.conf:/etc/nginx/nginx.conf
-        - ./WebUI/wwwroot:/app/wwwroot
+      - ./WebUI/nginx.conf:/etc/nginx/nginx.conf  # Mount nginx configuration
+      - ./WebUI/wwwroot:/app/wwwroot  # Mount the static web files
     depends_on:
-        - server
+      - server  # Ensure the server is up before starting the web UI
+    networks:
+      - documents-network  # Ensure communication with server
+
+# Volumes for persistent data
+volumes:
+  postgres-data:  # PostgreSQL data persistence
+
+# Network for internal communication between services
+networks:
+  documents-network:
+    driver: bridge

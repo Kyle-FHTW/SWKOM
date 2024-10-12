@@ -13,12 +13,8 @@ function addDocument() {
         return;
     }
 
-    // Generate a new ID for the document (for example, using the current timestamp)
-    const newId = Date.now(); // Simple unique ID generation
-
-    // Create a new document object
+    // Create a new document object (excluding id)
     const newDocument = {
-        id: newId,  // Assign the generated ID
         title: title,
         metadata: metadata,
         description: description,
@@ -30,7 +26,7 @@ function addDocument() {
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify(newDocument)
+        body: JSON.stringify(newDocument) // Do not include 'id' here
     })
         .then(response => {
             if (response.ok) {

@@ -1,33 +1,82 @@
+using DocumentsREST.BL.Services;
+using DocumentsREST.DAL;
+using DocumentsREST.DAL.Repositories;
+using DocumentsREST.Mappings;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Configure logging
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole(); // Add logging to the console
+
+// Add services to the container
 builder.Services.AddControllers();
+
+// Configure AutoMapper
+builder.Services.AddAutoMapper(typeof(DocumentMappingProfile));
+
+// Register your DbContext with PostgreSQL and add logging for connection success/failure
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+           .EnableSensitiveDataLogging()); // Enable more detailed logging for debugging
+
+// Register your repositories and services for Dependency Injection
+builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();  // Repository injection
+builder.Services.AddScoped<IDocumentService, DocumentService>();        // Service injection
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+// CORS Configuration (already in your code)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowWebUI",
         policy =>
         {
-            policy.WithOrigins("http://localhost") // The URL of your Web UI
+            policy.WithOrigins("http://localhost")  // The URL of your Web UI
                 .AllowAnyHeader()
                 .AllowAnyMethod();
         });
 });
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-app.UseSwagger();
-app.UseSwaggerUI();
+// Configure the HTTP request pipeline
+if (app.Environment.IsDevelopment())  // Optionally, only use Swagger in development
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 app.UseHttpsRedirection();
 
-app.UseCors("AllowWebUI");
+app.UseCors("AllowWebUI");  // Apply CORS policy
 
-app.UseAuthorization();
+app.UseAuthorization();     // Ensure authorization middleware is in the pipeline
 
-app.MapControllers();
+// Custom logging to check the database connection status
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
+
+    try
+    {
+        var context = services.GetRequiredService<AppDbContext>();
+        context.Database.OpenConnection();  // Try to open a connection
+        context.Database.CloseConnection(); // Close after testing the connection
+
+        logger.LogInformation("Successfully connected to the PostgreSQL database.");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "An error occurred while connecting to the PostgreSQL database.");
+    }
+}
+
+app.MapControllers();       // Map controller endpoints
 
 app.Run();
