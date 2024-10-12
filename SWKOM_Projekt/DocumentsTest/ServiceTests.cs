@@ -119,10 +119,17 @@ public class ServiceTests
     [Test]
     public async Task Should_Call_DeleteDocumentAsync_Once_When_Deleting_Document()
     {
+        // Arrange
+        var mockDocument = new Document { Id = 1, Title = "Sample Document" };
+
+        // Set up the repository to return the document when GetDocumentByIdAsync is called
+        _mockRepository.Setup(repo => repo.GetDocumentByIdAsync(1)).ReturnsAsync(mockDocument);
+
         // Act
         await _documentService.DeleteDocumentAsync(1);
 
         // Assert
         _mockRepository.Verify(repo => repo.DeleteDocumentAsync(1), Times.Once);
     }
+
 }
