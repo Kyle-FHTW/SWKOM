@@ -1,41 +1,78 @@
 using DocumentsREST.DAL.Models;
 using Microsoft.EntityFrameworkCore;
+using log4net; // Import log4net
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
-namespace DocumentsREST.DAL.Repositories;
-
-public class DocumentRepository(AppDbContext context) : IDocumentRepository
+namespace DocumentsREST.DAL.Repositories
 {
-    private readonly AppDbContext _context = context;
-
-    public async Task<Document?> GetDocumentByIdAsync(long id)
+    public class DocumentRepository : IDocumentRepository
     {
-        return await _context.Documents.FindAsync(id);
-    }
+        private readonly AppDbContext _context;
+        private static readonly ILog Log = LogManager.GetLogger(typeof(DocumentRepository)); // Initialize logger
 
-    public async Task<List<Document?>> GetAllDocumentsAsync()
-    {
-        return await _context.Documents.ToListAsync();
-    }
-
-    public async Task AddDocumentAsync(Document? document)
-    {
-        _context.Documents.Add(document);
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task UpdateDocumentAsync(Document document)
-    {
-        _context.Documents.Update(document);
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task DeleteDocumentAsync(long id)
-    {
-        var document = await _context.Documents.FindAsync(id);
-        if (document != null)
+        public DocumentRepository(AppDbContext context)
         {
+            _context = context;
+        }
+
+        public async Task<Document?> GetDocumentByIdAsync(long id)
+        {
+            Log.Info($"Fetching document with ID: {id}");
+            var document = await _context.Documents.FindAsync(id);
+
+            if (document == null)
+            {
+                Log.Warn($"Document with ID: {id} not found.");
+            }
+            else
+            {
+                Log.Info($"Document with ID: {id} retrieved successfully.");
+            }
+
+            return document;
+        }
+
+        public async Task<List<Document?>> GetAllDocumentsAsync()
+        {
+            Log.Info("Fetching all documents.");
+            var documents = await _context.Documents.ToListAsync();
+            Log.Info($"Retrieved {documents.Count} documents.");
+            return documents;
+        }
+
+        public async Task AddDocumentAsync(Document? document)
+        {
+            Log.Info($"Adding document: {document?.Title}");
+
+            _context.Documents.Add(document);
+            await _context.SaveChangesAsync();
+            Log.Info($"Document added successfully: {document?.Id} - {document?.Title}");
+        }
+
+        public async Task UpdateDocumentAsync(Document document)
+        {
+            Log.Info($"Updating document with ID: {document.Id}");
+
+            _context.Documents.Update(document);
+            await _context.SaveChangesAsync();
+            Log.Info($"Document with ID: {document.Id} updated successfully.");
+        }
+
+        public async Task DeleteDocumentAsync(long id)
+        {
+            Log.Info($"Deleting document with ID: {id}");
+
+            var document = await _context.Documents.FindAsync(id);
+            if (document == null)
+            {
+                Log.Warn($"Document with ID: {id} not found for deletion.");
+                return; // Document not found, exit without action
+            }
+
             _context.Documents.Remove(document);
             await _context.SaveChangesAsync();
+            Log.Info($"Document with ID: {id} deleted successfully.");
         }
     }
 }

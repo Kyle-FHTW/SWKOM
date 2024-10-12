@@ -1,65 +1,89 @@
-#region
-
-using AutoMapper;
-using DocumentsREST.BL.DTOs;
 using DocumentsREST.DAL.Models;
 using DocumentsREST.DAL.Repositories;
+using log4net; // Import log4net
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
-#endregion
-
-namespace DocumentsREST.BL.Services;
-
-public class DocumentService : IDocumentService
+namespace DocumentsREST.BL.Services
 {
-    private readonly IDocumentRepository _documentRepository;
-    private readonly IMapper _mapper;
-
-    public DocumentService(IDocumentRepository documentRepository, IMapper mapper)
+    public class DocumentService : IDocumentService
     {
-        _documentRepository = documentRepository;
-        _mapper = mapper;
-    }
+        private readonly IDocumentRepository _documentRepository;
+        private static readonly ILog Log = LogManager.GetLogger(typeof(DocumentService)); // Initialize logger
 
-    public async Task<DocumentDto> GetDocumentByIdAsync(long id)
-    {
-        var document = await _documentRepository.GetDocumentByIdAsync(id);
-        if (document == null) return null;
-
-        // Use AutoMapper to map Document to DocumentDto
-        return _mapper.Map<DocumentDto>(document);
-    }
-
-    public async Task<IEnumerable<DocumentDto>> GetAllDocumentsAsync()
-    {
-        var documents = await _documentRepository.GetAllDocumentsAsync();
-
-        // Use AutoMapper to map List<Document> to List<DocumentDto>
-        return _mapper.Map<IEnumerable<DocumentDto>>(documents);
-    }
-
-    public async Task AddDocumentAsync(DocumentDto documentDto)
-    {
-        // Use AutoMapper to map DocumentDto to Document entity
-        var document = _mapper.Map<Document>(documentDto);
-        await _documentRepository.AddDocumentAsync(document);
-
-        // After adding, update the DTO's Id with the generated Id
-        documentDto.Id = document.Id;
-    }
-
-    public async Task UpdateDocumentAsync(long id, DocumentDto documentDto)
-    {
-        var document = await _documentRepository.GetDocumentByIdAsync(id);
-        if (document != null)
+        public DocumentService(IDocumentRepository documentRepository)
         {
-            // Use AutoMapper to map updated values from DocumentDto to Document
-            _mapper.Map(documentDto, document);
-            await _documentRepository.UpdateDocumentAsync(document);
+            _documentRepository = documentRepository;
         }
-    }
 
-    public async Task DeleteDocumentAsync(long id)
-    {
-        await _documentRepository.DeleteDocumentAsync(id);
+        public async Task<Document> GetDocumentByIdAsync(long id)
+        {
+            Log.Info($"Fetching document with ID: {id}");
+            var document = await _documentRepository.GetDocumentByIdAsync(id);
+
+            if (document == null)
+            {
+                Log.Warn($"Document with ID: {id} not found.");
+            }
+            else
+            {
+                Log.Info($"Document with ID: {id} retrieved successfully.");
+            }
+
+            return document;
+        }
+
+        public async Task<IEnumerable<Document>> GetAllDocumentsAsync()
+        {
+            Log.Info("Fetching all documents.");
+            var documents = await _documentRepository.GetAllDocumentsAsync();
+            Log.Info($"Retrieved {documents.Count()} documents.");
+            return documents;
+        }
+
+        public async Task<Document> AddDocumentAsync(Document document)
+        {
+            Log.Info($"Adding document: {document.Title}");
+
+            await _documentRepository.AddDocumentAsync(document);
+            Log.Info($"Document added successfully: {document.Id} - {document.Title}");
+            return document;  // Return the document with its generated ID.
+        }
+
+        public async Task<bool> UpdateDocumentAsync(Document document)
+        {
+            Log.Info($"Updating document with ID: {document.Id}");
+
+            var existingDocument = await _documentRepository.GetDocumentByIdAsync(document.Id);
+            if (existingDocument == null)
+            {
+                Log.Warn($"Document with ID: {document.Id} not found for update.");
+                return false;  // Document does not exist.
+            }
+
+            // Update fields
+            existingDocument.Title = document.Title;
+            existingDocument.Description = document.Description;
+            existingDocument.Metadata = document.Metadata;
+
+            await _documentRepository.UpdateDocumentAsync(existingDocument);
+            Log.Info($"Document with ID: {document.Id} updated successfully.");
+            return true;  // Indicate the update was successful.
+        }
+
+        public async Task DeleteDocumentAsync(long id)
+        {
+            Log.Info($"Deleting document with ID: {id}");
+
+            var document = await _documentRepository.GetDocumentByIdAsync(id);
+            if (document == null)
+            {
+                Log.Warn($"Document with ID: {id} not found for deletion.");
+                return; // Document not found, exit without action
+            }
+
+            await _documentRepository.DeleteDocumentAsync(id);
+            Log.Info($"Document with ID: {id} deleted successfully.");
+        }
     }
 }

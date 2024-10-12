@@ -18,6 +18,8 @@ services:
         condition: service_healthy  # Wait for the database service to be ready before starting
     networks:
       - documents-network  # Ensure communication between server and db
+    volumes:
+      - ./logs:/app/logs  # Mount the logs directory
   
   db:
     container_name: DocumentsDB

@@ -1,11 +1,13 @@
 using DocumentsREST.BL.DTOs;
+using DocumentsREST.DAL.Models;
+
 namespace DocumentsREST.BL.Services;
 
 public interface IDocumentService
 {
-    Task<DocumentDto> GetDocumentByIdAsync(long id);
-    Task<IEnumerable<DocumentDto>> GetAllDocumentsAsync();
-    Task AddDocumentAsync(DocumentDto documentDto);
-    Task UpdateDocumentAsync(long id, DocumentDto documentDto);
+    Task<Document> GetDocumentByIdAsync(long id);
+    Task<IEnumerable<Document>> GetAllDocumentsAsync();
+    Task<Document> AddDocumentAsync(Document document);
+    Task<bool> UpdateDocumentAsync(Document document);
     Task DeleteDocumentAsync(long id);
 }
