@@ -106,10 +106,9 @@ namespace DocumentsREST.Controllers
 
             // Add the document to the database using the service
             var createdDocument = await _documentService.AddDocumentAsync(documentEntity);
-
-            Log.Info($"Document with ID: {createdDocument.Id} uploaded successfully.");
-            // Return a response with the newly created document
-            return CreatedAtAction(nameof(Get), new { id = createdDocument.Id }, createdDocument);
+            var createdDocumentDto = _mapper.Map<DocumentDto>(createdDocument);
+            Log.Info($"Document with ID: {createdDocumentDto.Id} created successfully.");
+            return CreatedAtAction(nameof(Get), new { id = createdDocumentDto.Id }, createdDocumentDto);
         }
 
 
