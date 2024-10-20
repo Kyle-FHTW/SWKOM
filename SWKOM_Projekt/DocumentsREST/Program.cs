@@ -5,8 +5,9 @@ using DocumentsREST.Mappings;
 using Microsoft.EntityFrameworkCore;
 using log4net;
 using log4net.Config;
-using System.IO;
 using Microsoft.AspNetCore.Http.Features; // Import this for FileInfo
+using FluentValidation; // Add this for FluentValidation
+using DocumentsREST.BL.DTOs; // Add this for DocumentDtoValidator
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +34,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Register your repositories and services for Dependency Injection
 builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();  // Repository injection
 builder.Services.AddScoped<IDocumentService, DocumentService>();        // Service injection
+
+// Register FluentValidation validators
+builder.Services.AddTransient<IValidator<DocumentDto>, DocumentDtoValidator>(); // Add this line
 
 // Set maximum file upload size (20 MB)
 builder.Services.Configure<FormOptions>(options =>

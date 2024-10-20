@@ -5,7 +5,9 @@ using AutoMapper;
 using DocumentsREST.BL.Services;
 using DocumentsREST.BL.DTOs;
 using DocumentsREST.DAL.Models;
-using log4net; // Import log4net
+using log4net;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace DocumentsREST.Controllers
 {
@@ -13,14 +15,16 @@ namespace DocumentsREST.Controllers
     [ApiController]
     public class DocumentsController : ControllerBase
     {
-        private readonly IDocumentService _documentService;  // Injected service to interact with DB
-        private readonly IMapper _mapper;  // AutoMapper for mapping Document <-> DocumentDto
-        private static readonly ILog Log = LogManager.GetLogger(typeof(DocumentsController)); // Initialize logger
+        private readonly IDocumentService _documentService;
+        private readonly IMapper _mapper;
+        private readonly IValidator<DocumentDto> _validator;
+        private static readonly ILog Log = LogManager.GetLogger(typeof(DocumentsController));
 
-        public DocumentsController(IDocumentService documentService, IMapper mapper)
+        public DocumentsController(IDocumentService documentService, IMapper mapper, IValidator<DocumentDto> validator)
         {
             _documentService = documentService;
             _mapper = mapper;
+            _validator = validator;
         }
 
         [HttpGet("documents")]
@@ -51,19 +55,15 @@ namespace DocumentsREST.Controllers
         {
             Log.Info("Adding a new document.");
 
-            if (!ModelState.IsValid)
+            ValidationResult result = await _validator.ValidateAsync(documentDto);
+            if (!result.IsValid)
             {
-                Log.Warn("Invalid model state for document.");
-                return BadRequest(ModelState);
+                Log.Warn("Invalid document data.");
+                return BadRequest(result.Errors);
             }
 
-            // Map DTO to entity
             var documentEntity = _mapper.Map<Document>(documentDto);
-
-            // Call service to add the document
             var createdDocument = await _documentService.AddDocumentAsync(documentEntity);
-
-            // Map the created entity to DTO (with ID)
             var createdDocumentDto = _mapper.Map<DocumentDto>(createdDocument);
 
             Log.Info($"Document with ID: {createdDocumentDto.Id} created successfully.");
@@ -81,7 +81,6 @@ namespace DocumentsREST.Controllers
                 return BadRequest("File is required.");
             }
 
-            // Set your max file size limit (e.g., 10 MB)
             const long maxFileSize = 20 * 1024 * 1024; // 10 MB
 
             if (file.Length > maxFileSize)
@@ -90,41 +89,42 @@ namespace DocumentsREST.Controllers
                 return BadRequest("File size exceeds the maximum limit of 10 MB.");
             }
 
-            // Automatically use the original filename
             var fileName = file.FileName;
-
-            // Automatically use the original filename (without extension) as the title
             var title = Path.GetFileNameWithoutExtension(file.FileName);
 
-            // Create a new document entity and set the title from the filename
             var documentEntity = new Document
             {
-                Title = title,  // Automatically set title from file name
-                Metadata = "Example Metadata",  // Placeholder for metadata
+                Title = title,
+                Metadata = "Example Metadata",
                 Description = description
             };
 
-            // Add the document to the database using the service
             var createdDocument = await _documentService.AddDocumentAsync(documentEntity);
             var createdDocumentDto = _mapper.Map<DocumentDto>(createdDocument);
             Log.Info($"Document with ID: {createdDocumentDto.Id} created successfully.");
             return CreatedAtAction(nameof(Get), new { id = createdDocumentDto.Id }, createdDocumentDto);
         }
 
-
         [HttpPut("documents/{id}")]
         public async Task<ActionResult> Put(long id, [FromBody] DocumentDto updatedDocumentDto)
         {
             Log.Info($"Updating document with ID: {id}");
 
+            ValidationResult result = await _validator.ValidateAsync(updatedDocumentDto);
+            if (!result.IsValid)
+            {
+                Log.Warn("Invalid document data.");
+                return BadRequest(result.Errors);
+            }
+
             var documentEntity = _mapper.Map<Document>(updatedDocumentDto);
-            documentEntity.Id = id;  // Ensure the ID is set from the route.
+            documentEntity.Id = id;
 
             var updateSuccess = await _documentService.UpdateDocumentAsync(documentEntity);
             if (!updateSuccess)
             {
                 Log.Warn($"Document with ID: {id} not found for update.");
-                return NotFound();  // If the document doesn't exist, return 404.
+                return NotFound();
             }
 
             Log.Info($"Document with ID: {id} updated successfully.");

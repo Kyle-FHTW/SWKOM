@@ -1,28 +1,74 @@
-namespace DocumentsTest;
+using FluentValidation;
+using FluentValidation.Results;
 
-[TestFixture]
-public class ValidationTests
+namespace DocumentsTest
 {
-    [Test]
-    public void Should_Throw_ValidationException_When_Title_Is_Empty()
+    [TestFixture]
+    public class ValidationTests
     {
-        // Arrange
-        var document = new Document
+        private IValidator<DocumentDto> _validator;
+
+        [SetUp]
+        public void Setup()
         {
-            Title = null,  // Invalid title
-            Metadata = "Metadata",
-            Description = "Description"
-        };
+            _validator = new DocumentDtoValidator();
+        }
 
-        var validationContext = new ValidationContext(document);
-        var validationResults = new List<ValidationResult>();
+        [Test]
+        public void Should_Throw_ValidationException_When_Title_Is_Empty()
+        {
+            // Arrange
+            var documentDto = new DocumentDto
+            {
+                Title = null,  // Invalid title
+                Metadata = "Metadata",
+                Description = "Description"
+            };
 
-        // Act
-        var isValid = Validator.TryValidateObject(document, validationContext, validationResults, true);
+            // Act
+            var result = _validator.Validate(documentDto);
 
-        // Assert
-        Assert.That(isValid, Is.False);  // Assert that validation fails
-        Assert.That(validationResults, Has.One.Matches<ValidationResult>(v => v.ErrorMessage == "Title is required"));
+            // Assert
+            Assert.That(result.IsValid, Is.False);  // Assert that validation fails
+            Assert.That(result.Errors, Has.One.Matches<ValidationFailure>(v => v.ErrorMessage == "Title is required."));
+        }
+
+        [Test]
+        public void Should_Throw_ValidationException_When_Metadata_Is_Empty()
+        {
+            // Arrange
+            var documentDto = new DocumentDto
+            {
+                Title = "Title",
+                Metadata = null,  // Invalid metadata
+                Description = "Description"
+            };
+
+            // Act
+            var result = _validator.Validate(documentDto);
+
+            // Assert
+            Assert.That(result.IsValid, Is.False);  // Assert that validation fails
+            Assert.That(result.Errors, Has.One.Matches<ValidationFailure>(v => v.ErrorMessage == "Metadata is required."));
+        }
+
+        [Test]
+        public void Should_Throw_ValidationException_When_Description_Is_Empty()
+        {
+            // Arrange
+            var documentDto = new DocumentDto
+            {
+                Title = "Title",
+                Metadata = "Metadata",
+                Description = null  // Invalid description
+            };
+
+            // Act
+            var result = _validator.Validate(documentDto);
+
+            // Assert
+            Assert.That(result.IsValid, Is.False);  // Assert that validation fails
+            Assert.That(result.Errors, Has.One.Matches<ValidationFailure>(v => v.ErrorMessage == "Description is required."));
+        }
     }
-
 }

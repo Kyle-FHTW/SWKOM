@@ -79,4 +79,8 @@
       <_ContentIncludedByDefault Remove="wwwroot\lib\jquery\LICENSE.txt" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="FluentValidation" Version="11.10.0" />
+    </ItemGroup>
+
 </Project>
