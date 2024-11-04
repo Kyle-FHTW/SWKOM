@@ -1,6 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using AutoMapper;
 using DocumentsREST.BL.Services;
 using DocumentsREST.BL.DTOs;
@@ -8,23 +6,39 @@ using DocumentsREST.DAL.Models;
 using log4net;
 using FluentValidation;
 using FluentValidation.Results;
+using RabbitMQ.Client;
+using System.Text;
 
 namespace DocumentsREST.Controllers
 {
     [Route("/")]
     [ApiController]
-    public class DocumentsController : ControllerBase
+    public class DocumentsController : ControllerBase, IDisposable
     {
         private readonly IDocumentService _documentService;
         private readonly IMapper _mapper;
         private readonly IValidator<DocumentDto> _validator;
         private static readonly ILog Log = LogManager.GetLogger(typeof(DocumentsController));
+        private readonly IConnection _connection;
+        private readonly IModel _channel;
+        private readonly string _queueName = "document_queue";
 
         public DocumentsController(IDocumentService documentService, IMapper mapper, IValidator<DocumentDto> validator)
         {
             _documentService = documentService;
             _mapper = mapper;
             _validator = validator;
+
+            var factory = new ConnectionFactory()
+            {
+                HostName = "DocumentsRabbitMQ", // Use the RabbitMQ container name
+                UserName = "admin",
+                Password = "admin"
+            };
+
+            _connection = factory.CreateConnection();
+            _channel = _connection.CreateModel();
+            _channel.QueueDeclare(queue: _queueName, durable: false, exclusive: false, autoDelete: false, arguments: null);
         }
 
         [HttpGet("documents")]
@@ -81,12 +95,12 @@ namespace DocumentsREST.Controllers
                 return BadRequest("File is required.");
             }
 
-            const long maxFileSize = 20 * 1024 * 1024; // 10 MB
+            const long maxFileSize = 20 * 1024 * 1024; // 20 MB
 
             if (file.Length > maxFileSize)
             {
                 Log.Warn($"File size {file.Length} exceeds the maximum limit of {maxFileSize} bytes.");
-                return BadRequest("File size exceeds the maximum limit of 10 MB.");
+                return BadRequest("File size exceeds the maximum limit of 20 MB.");
             }
 
             var fileName = file.FileName;
@@ -101,6 +115,13 @@ namespace DocumentsREST.Controllers
 
             var createdDocument = await _documentService.AddDocumentAsync(documentEntity);
             var createdDocumentDto = _mapper.Map<DocumentDto>(createdDocument);
+
+            var message = $"Document ID: {createdDocument.Id}, Title: {createdDocument.Title}";
+            var body = Encoding.UTF8.GetBytes(message);
+
+            _channel.BasicPublish(exchange: "", routingKey: _queueName, basicProperties: null, body: body);
+            Log.Info($"Document sent to RabbitMQ queue: {createdDocument.Id} - {createdDocument.Title}");
+
             Log.Info($"Document with ID: {createdDocumentDto.Id} created successfully.");
             return CreatedAtAction(nameof(Get), new { id = createdDocumentDto.Id }, createdDocumentDto);
         }
@@ -146,6 +167,19 @@ namespace DocumentsREST.Controllers
             await _documentService.DeleteDocumentAsync(id);
             Log.Info($"Document with ID: {id} deleted successfully.");
             return Ok();
+        }
+
+        private void SendToMessageQueue(string message)
+        {
+            var body = Encoding.UTF8.GetBytes(message);
+            _channel.BasicPublish(exchange: "", routingKey: _queueName, basicProperties: null, body: body);
+            Log.Info($"[x] Sent {message}");
+        }
+
+        public void Dispose()
+        {
+            _channel?.Close();
+            _connection?.Close();
         }
     }
 }

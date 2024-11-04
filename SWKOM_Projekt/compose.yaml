@@ -56,6 +56,17 @@ services:
       - server  # Ensure the server is up before starting the web UI
     networks:
       - documents-network  # Ensure communication with server
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: DocumentsRabbitMQ
+    ports:
+      - 15672:15672  # Expose RabbitMQ management port
+      - 5672:5672  # Expose RabbitMQ port
+    environment:
+        RABBITMQ_DEFAULT_USER: admin
+        RABBITMQ_DEFAULT_PASS: admin
+    networks:
+        - documents-network  # Ensure communication between services
 
 # Volumes for persistent data
 volumes:

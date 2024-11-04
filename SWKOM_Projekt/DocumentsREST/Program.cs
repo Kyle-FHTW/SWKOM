@@ -11,6 +11,7 @@ using DocumentsREST.BL.DTOs; // Add this for DocumentDtoValidator
 
 var builder = WebApplication.CreateBuilder(args);
 
+
 // Configure log4net
 var log4NetConfigFile = new FileInfo("log4net.config");
 XmlConfigurator.Configure(log4NetConfigFile);
@@ -36,7 +37,7 @@ builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();  // Repos
 builder.Services.AddScoped<IDocumentService, DocumentService>();        // Service injection
 
 // Register FluentValidation validators
-builder.Services.AddTransient<IValidator<DocumentDto>, DocumentDtoValidator>(); // Add this line
+builder.Services.AddTransient<IValidator<DocumentDto>, DocumentDtoValidator>();
 
 // Set maximum file upload size (20 MB)
 builder.Services.Configure<FormOptions>(options =>

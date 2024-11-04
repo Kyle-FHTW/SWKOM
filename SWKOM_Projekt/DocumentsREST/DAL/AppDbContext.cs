@@ -9,6 +9,7 @@ namespace DocumentsREST.DAL
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
+            
         }
     }
 }
