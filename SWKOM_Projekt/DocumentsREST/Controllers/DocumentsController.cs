@@ -105,6 +105,13 @@ namespace DocumentsREST.Controllers
 
             var fileName = file.FileName;
             var title = Path.GetFileNameWithoutExtension(file.FileName);
+            var uploadPath = Path.Combine("/app/uploads", fileName);
+
+            // Save the file to the specified path
+            using (var stream = new FileStream(uploadPath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
 
             var documentEntity = new Document
             {
@@ -116,7 +123,8 @@ namespace DocumentsREST.Controllers
             var createdDocument = await _documentService.AddDocumentAsync(documentEntity);
             var createdDocumentDto = _mapper.Map<DocumentDto>(createdDocument);
 
-            var message = $"Document ID: {createdDocument.Id}, Title: {createdDocument.Title}";
+            // Format the message to include the document ID and file path
+            var message = $"{createdDocument.Id}|{uploadPath}";
             var body = Encoding.UTF8.GetBytes(message);
 
             _channel.BasicPublish(exchange: "", routingKey: _queueName, basicProperties: null, body: body);

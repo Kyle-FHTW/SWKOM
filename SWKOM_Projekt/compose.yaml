@@ -20,6 +20,7 @@ services:
       - documents-network  # Ensure communication between server and db
     volumes:
       - ./logs:/app/logs  # Mount the logs directory
+      - ./uploads:/app/uploads  # Mount the uploads directory
   
   db:
     container_name: DocumentsDB
@@ -67,6 +68,19 @@ services:
         RABBITMQ_DEFAULT_PASS: admin
     networks:
         - documents-network  # Ensure communication between services
+  ocr_worker:
+    image: ocr_worker
+    container_name: DocumentsOCRWorker
+    build:
+      context: .
+      dockerfile: OCRWorker/Dockerfile
+    depends_on:
+        - rabbitmq  # Ensure RabbitMQ is up before starting the OCR worker
+    networks:
+        - documents-network  # Ensure communication with RabbitMQ
+    volumes:
+        - ./uploads:/app/uploads  # Mount the uploads directory
+        
 
 # Volumes for persistent data
 volumes:

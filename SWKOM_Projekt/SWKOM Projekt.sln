@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebUI", "WebUI\WebUI.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocumentsTest", "DocumentsTest\DocumentsTest.csproj", "{54F7B001-AEA5-4413-BBB2-547A69E667AF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OcrWorker", "OcrWorker\OcrWorker.csproj", "{80EA12CE-A85D-4F44-A991-74A848B46A69}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{54F7B001-AEA5-4413-BBB2-547A69E667AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{54F7B001-AEA5-4413-BBB2-547A69E667AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{54F7B001-AEA5-4413-BBB2-547A69E667AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{80EA12CE-A85D-4F44-A991-74A848B46A69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80EA12CE-A85D-4F44-A991-74A848B46A69}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80EA12CE-A85D-4F44-A991-74A848B46A69}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80EA12CE-A85D-4F44-A991-74A848B46A69}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
