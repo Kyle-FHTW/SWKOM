@@ -6,7 +6,7 @@ using DocumentsREST.DAL.Models;
 using log4net;
 using FluentValidation;
 using FluentValidation.Results;
-using RabbitMQ.Client;
+using RabbitMQ.Client; // added messageQues
 using System.Text;
 
 namespace DocumentsREST.Controllers
