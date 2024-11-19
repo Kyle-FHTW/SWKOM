@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>File Upload</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -11,21 +11,22 @@
 <div class="container mt-5">
     <h1 class="mb-4 text-center">Upload Document (PDF only)</h1>
 
-    <form id="uploadForm" class="p-4 border rounded bg-light">
+    <form class="p-4 border rounded bg-light" id="uploadForm">
         <div class="mb-3">
-            <label for="description" class="form-label">Description</label>
-            <input type="text" class="form-control" id="description" name="description" required placeholder="Enter document description">
+            <label class="form-label" for="description">Description</label>
+            <input class="form-control" id="description" name="description" placeholder="Enter document description" required
+                   type="text">
         </div>
 
         <div class="mb-3">
-            <label for="file" class="form-label">Choose a file (PDF only)</label>
-            <input type="file" class="form-control" id="file" name="file" accept=".pdf" required>
+            <label class="form-label" for="file">Choose a file (PDF only)</label>
+            <input accept=".pdf" class="form-control" id="file" name="file" required type="file">
         </div>
 
-        <button type="button" id="uploadBtn" class="btn btn-primary w-100" onclick="uploadDocument()">Upload</button>
+        <button class="btn btn-primary w-100" id="uploadBtn" onclick="uploadDocument()" type="button">Upload</button>
     </form>
 
-    <p id="result" class="mt-3 text-center"></p>
+    <p class="mt-3 text-center" id="result"></p>
 </div>
 
 <!-- Link to the external JS file -->

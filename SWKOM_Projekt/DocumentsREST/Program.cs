@@ -1,13 +1,21 @@
+#region
+
+using DocumentsREST.BL.DTOs;
 using DocumentsREST.BL.Services;
 using DocumentsREST.DAL;
 using DocumentsREST.DAL.Repositories;
 using DocumentsREST.Mappings;
-using Microsoft.EntityFrameworkCore;
+using FluentValidation;
 using log4net;
 using log4net.Config;
-using Microsoft.AspNetCore.Http.Features; // Import this for FileInfo
-using FluentValidation; // Add this for FluentValidation
-using DocumentsREST.BL.DTOs; // Add this for DocumentDtoValidator
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.EntityFrameworkCore;
+// Import this for FileInfo
+// Add this for FluentValidation
+
+#endregion
+
+// Add this for DocumentDtoValidator
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,11 +38,16 @@ builder.Services.AddAutoMapper(typeof(DocumentMappingProfile));
 // Register your DbContext with PostgreSQL and add logging for connection success/failure
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
-           .EnableSensitiveDataLogging()); // Enable more detailed logging for debugging
+        .EnableSensitiveDataLogging()); // Enable more detailed logging for debugging
 
 // Register your repositories and services for Dependency Injection
-builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();  // Repository injection
-builder.Services.AddScoped<IDocumentService, DocumentService>();        // Service injection
+builder.Services.AddScoped<IDocumentRepository, DocumentRepository>(); // Repository injection
+builder.Services.AddScoped<IDocumentService, DocumentService>(); // Service injection
+builder.Services.AddScoped<IRabbitMqService>(provider => 
+    new RabbitMqService("document_queue", "DocumentsRabbitMQ", "admin", "admin"));
+
+builder.Services.AddScoped<IMinioService>(provider => 
+    new MinioService("minio:9000", "minioadmin", "minioadmin", "documents", useSSL: false));
 
 // Register FluentValidation validators
 builder.Services.AddTransient<IValidator<DocumentDto>, DocumentDtoValidator>();
@@ -55,7 +68,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowWebUI",
         policy =>
         {
-            policy.WithOrigins("http://localhost")  // The URL of your Web UI
+            policy.WithOrigins("http://localhost") // The URL of your Web UI
                 .AllowAnyHeader()
                 .AllowAnyMethod();
         });
@@ -64,7 +77,7 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
-if (app.Environment.IsDevelopment())  // Optionally, only use Swagger in development
+if (app.Environment.IsDevelopment()) // Optionally, only use Swagger in development
 {
     app.UseSwagger();
     app.UseSwaggerUI();
@@ -72,9 +85,9 @@ if (app.Environment.IsDevelopment())  // Optionally, only use Swagger in develop
 
 app.UseHttpsRedirection();
 
-app.UseCors("AllowWebUI");  // Apply CORS policy
+app.UseCors("AllowWebUI"); // Apply CORS policy
 
-app.UseAuthorization();     // Ensure authorization middleware is in the pipeline
+app.UseAuthorization(); // Ensure authorization middleware is in the pipeline
 
 // Custom logging to check the database connection status
 using (var scope = app.Services.CreateScope())
@@ -85,7 +98,7 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<AppDbContext>();
-        context.Database.OpenConnection();  // Try to open a connection
+        context.Database.OpenConnection(); // Try to open a connection
         context.Database.CloseConnection(); // Close after testing the connection
 
         logger.Info("Successfully connected to the PostgreSQL database.");
@@ -96,6 +109,6 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-app.MapControllers();       // Map controller endpoints
+app.MapControllers(); // Map controller endpoints
 
 app.Run();

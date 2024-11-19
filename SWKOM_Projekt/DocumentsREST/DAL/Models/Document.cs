@@ -1,10 +1,9 @@
-namespace DocumentsREST.DAL.Models
+namespace DocumentsREST.DAL.Models;
+
+public class Document
 {
-    public class Document
-    {
-        public long Id { get; set; }
-        public string? Title { get; set; }
-        public string? Metadata { get; set; }
-        public string? Description { get; set; }
-    }
+    public long Id { get; set; }
+    public string? Title { get; set; }
+    public string? Metadata { get; set; }
+    public string? Description { get; set; }
 }

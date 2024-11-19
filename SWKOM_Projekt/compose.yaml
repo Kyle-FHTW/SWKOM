@@ -1,4 +1,4 @@
-version: '3.8'  # Specify Docker Compose file version
+version: '3.8'
 
 services:
   server:
@@ -12,15 +12,17 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8081
-      - ConnectionStrings__DefaultConnection=Host=db;Database=DocumentsDB;Username=postgres;Password=postgres  # Connection string to the PostgreSQL database
+      - ConnectionStrings__DefaultConnection=Host=db;Database=DocumentsDB;Username=postgres;Password=postgres
     depends_on:
       db:
-        condition: service_healthy  # Wait for the database service to be ready before starting
+        condition: service_healthy
+      minio:
+        condition: service_healthy
     networks:
-      - documents-network  # Ensure communication between server and db
+      - documents-network
     volumes:
-      - ./logs:/app/logs  # Mount the logs directory
-      - ./uploads:/app/uploads  # Mount the uploads directory
+      - ./logs:/app/logs
+      - ./uploads:/app/uploads
   
   db:
     container_name: DocumentsDB
@@ -30,17 +32,17 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: DocumentsDB
     ports:
-      - 5432:5432  # Expose PostgreSQL port
+      - 5432:5432
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]  # Check PostgreSQL health
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 10s
       timeout: 5s
       retries: 5
     volumes:
-      - postgres-data:/var/lib/postgresql/data  # Persist PostgreSQL data across container restarts
-      - ./dbinit:/docker-entrypoint-initdb.d  # Mount the init.sql and run-init.sh scripts
+      - postgres-data:/var/lib/postgresql/data
+      - ./dbinit:/docker-entrypoint-initdb.d
     networks:
-      - documents-network  # Connect to the shared network
+      - documents-network
 
   webui:
     container_name: DocumentsWebUI
@@ -49,25 +51,27 @@ services:
       context: .
       dockerfile: WebUI/Dockerfile
     ports:
-      - 80:80  # Expose port 80 for the web UI
+      - 80:80
     volumes:
-      - ./WebUI/nginx.conf:/etc/nginx/nginx.conf  # Mount nginx configuration
-      - ./WebUI/wwwroot:/app/wwwroot  # Mount the static web files
+      - ./WebUI/nginx.conf:/etc/nginx/nginx.conf
+      - ./WebUI/wwwroot:/app/wwwroot
     depends_on:
-      - server  # Ensure the server is up before starting the web UI
+      - server
     networks:
-      - documents-network  # Ensure communication with server
+      - documents-network
+
   rabbitmq:
     image: rabbitmq:3-management
     container_name: DocumentsRabbitMQ
     ports:
-      - 15672:15672  # Expose RabbitMQ management port
-      - 5672:5672  # Expose RabbitMQ port
+      - 15672:15672
+      - 5672:5672
     environment:
-        RABBITMQ_DEFAULT_USER: admin
-        RABBITMQ_DEFAULT_PASS: admin
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
     networks:
-        - documents-network  # Ensure communication between services
+      - documents-network
+
   ocr_worker:
     image: ocr_worker
     container_name: DocumentsOCRWorker
@@ -75,16 +79,36 @@ services:
       context: .
       dockerfile: OCRWorker/Dockerfile
     depends_on:
-        - rabbitmq  # Ensure RabbitMQ is up before starting the OCR worker
+      - rabbitmq
     networks:
-        - documents-network  # Ensure communication with RabbitMQ
+      - documents-network
     volumes:
-        - ./uploads:/app/uploads  # Mount the uploads directory
-        
+      - ./uploads:/app/uploads
+
+  minio:
+    image: minio/minio
+    container_name: DocumentsMinIO
+    command: server /data --console-address ":9001"
+    ports:
+      - 9000:9000  # MinIO API port
+      - 9001:9001  # MinIO Console port
+    environment:
+      MINIO_ROOT_USER: minioadmin  # Replace with a secure username
+      MINIO_ROOT_PASSWORD: minioadmin  # Replace with a secure password
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - documents-network
 
 # Volumes for persistent data
 volumes:
-  postgres-data:  # PostgreSQL data persistence
+  postgres-data:
+  minio-data:  # Persistent storage for MinIO
 
 # Network for internal communication between services
 networks:

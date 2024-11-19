@@ -33,9 +33,9 @@ function updateDocument() {
 
     const updatedDocument = {
         id: documentId,
-        title: title,
-        metadata: metadata,
-        description: description,
+        title,
+        metadata,
+        description,
     };
 
     fetch(`${apiUrl}/${documentId}`, {
@@ -50,9 +50,7 @@ function updateDocument() {
                 alert('Document updated successfully!');
                 window.location.href = 'Index.html';
             } else {
-                return response.json().then(err => {
-                    alert('Error: ' + err.message);
-                });
+                return response.json().then(err => alert('Error: ' + err.message));
             }
         })
         .catch(error => {

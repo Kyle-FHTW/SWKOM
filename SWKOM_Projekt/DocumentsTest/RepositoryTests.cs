@@ -1,9 +1,11 @@
+namespace DocumentsTest;
+
 public class DocumentRepositoryTests
 {
     private DbContextOptions<AppDbContext> GetInMemoryDbContextOptions()
     {
         return new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString()) // Unique database name per test
+            .UseInMemoryDatabase(Guid.NewGuid().ToString()) // Unique database name per test
             .Options;
     }
 

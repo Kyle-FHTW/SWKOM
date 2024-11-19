@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>Edit Document</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body onload="loadDocumentData()">
 <div class="container mt-5">
@@ -13,17 +13,17 @@
         <form id="documentForm">
             <div class="form-group">
                 <label for="title">Title:</label>
-                <input type="text" id="title" class="form-control" required>
+                <input class="form-control" id="title" required type="text">
             </div>
             <div class="form-group">
                 <label for="metadata">Metadata:</label>
-                <input type="text" id="metadata" class="form-control">
+                <input class="form-control" id="metadata" type="text">
             </div>
             <div class="form-group">
                 <label for="description">Description:</label>
-                <textarea id="description" class="form-control"></textarea>
+                <textarea class="form-control" id="description"></textarea>
             </div>
-            <button type="button" onclick="updateDocument()" class="btn btn-primary">Update Document</button>
+            <button class="btn btn-primary" onclick="updateDocument()" type="button">Update Document</button>
         </form>
     </div>
 </div>

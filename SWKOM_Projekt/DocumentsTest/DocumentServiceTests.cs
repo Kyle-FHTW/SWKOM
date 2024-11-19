@@ -1,11 +1,8 @@
 namespace DocumentsTest;
 
 [TestFixture]
-public class ServiceTests
+public class DocumentServiceTests
 {
-    private Mock<IDocumentRepository> _mockRepository;
-    private DocumentService _documentService;
-
     [SetUp]
     public void Setup()
     {
@@ -15,6 +12,9 @@ public class ServiceTests
         // Initialize the DocumentService with the mocked repository
         _documentService = new DocumentService(_mockRepository.Object);
     }
+
+    private Mock<IDocumentRepository> _mockRepository;
+    private DocumentService _documentService;
 
     // CREATE Operation Test
     [Test]
@@ -49,7 +49,7 @@ public class ServiceTests
         };
 
         _mockRepository.Setup(repo => repo.GetDocumentByIdAsync(1))
-                       .ReturnsAsync(documentEntity);
+            .ReturnsAsync(documentEntity);
 
         // Act
         var result = await _documentService.GetDocumentByIdAsync(1);
@@ -67,12 +67,12 @@ public class ServiceTests
         // Arrange
         var documentEntities = new List<Document>
         {
-            new Document { Id = 1, Title = "Document 1", Metadata = "Metadata 1", Description = "Description 1" },
-            new Document { Id = 2, Title = "Document 2", Metadata = "Metadata 2", Description = "Description 2" }
+            new() { Id = 1, Title = "Document 1", Metadata = "Metadata 1", Description = "Description 1" },
+            new() { Id = 2, Title = "Document 2", Metadata = "Metadata 2", Description = "Description 2" }
         };
 
-        _mockRepository.Setup(repo => repo.GetAllDocumentsAsync())
-                       .ReturnsAsync(documentEntities);
+        _mockRepository.Setup(repo => repo.GetAllDocumentsAsync())!
+            .ReturnsAsync(documentEntities);
 
         // Act
         var result = await _documentService.GetAllDocumentsAsync();
@@ -105,7 +105,7 @@ public class ServiceTests
         };
 
         _mockRepository.Setup(repo => repo.GetDocumentByIdAsync(1))
-                       .ReturnsAsync(existingDocumentEntity);
+            .ReturnsAsync(existingDocumentEntity);
 
         // Act
         var updateSuccess = await _documentService.UpdateDocumentAsync(updatedDocument);
@@ -131,5 +131,4 @@ public class ServiceTests
         // Assert
         _mockRepository.Verify(repo => repo.DeleteDocumentAsync(1), Times.Once);
     }
-
 }

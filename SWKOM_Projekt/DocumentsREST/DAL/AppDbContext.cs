@@ -1,15 +1,17 @@
-using Microsoft.EntityFrameworkCore;
+#region
+
 using DocumentsREST.DAL.Models;
+using Microsoft.EntityFrameworkCore;
 
-namespace DocumentsREST.DAL
+#endregion
+
+namespace DocumentsREST.DAL;
+
+public class AppDbContext : DbContext
 {
-    public class AppDbContext : DbContext
+    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
-        public DbSet<Document> Documents { get; set; }
-
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
-        {
-            
-        }
     }
+
+    public DbSet<Document> Documents { get; set; }
 }

@@ -1,74 +1,71 @@
-using FluentValidation;
-using FluentValidation.Results;
+namespace DocumentsTest;
 
-namespace DocumentsTest
+[TestFixture]
+public class ValidationTests
 {
-    [TestFixture]
-    public class ValidationTests
+    [SetUp]
+    public void Setup()
     {
-        private IValidator<DocumentDto> _validator;
+        _validator = new DocumentDtoValidator();
+    }
 
-        [SetUp]
-        public void Setup()
+    private IValidator<DocumentDto> _validator;
+
+    [Test]
+    public void Should_Throw_ValidationException_When_Title_Is_Empty()
+    {
+        // Arrange
+        var documentDto = new DocumentDto
         {
-            _validator = new DocumentDtoValidator();
-        }
+            Title = null, // Invalid title
+            Metadata = "Metadata",
+            Description = "Description"
+        };
 
-        [Test]
-        public void Should_Throw_ValidationException_When_Title_Is_Empty()
+        // Act
+        var result = _validator.Validate(documentDto);
+
+        // Assert
+        Assert.That(result.IsValid, Is.False); // Assert that validation fails
+        Assert.That(result.Errors, Has.One.Matches<ValidationFailure>(v => v.ErrorMessage == "Title is required."));
+    }
+
+    [Test]
+    public void Should_Throw_ValidationException_When_Metadata_Is_Empty()
+    {
+        // Arrange
+        var documentDto = new DocumentDto
         {
-            // Arrange
-            var documentDto = new DocumentDto
-            {
-                Title = null,  // Invalid title
-                Metadata = "Metadata",
-                Description = "Description"
-            };
+            Title = "Title",
+            Metadata = null, // Invalid metadata
+            Description = "Description"
+        };
 
-            // Act
-            var result = _validator.Validate(documentDto);
+        // Act
+        var result = _validator.Validate(documentDto);
 
-            // Assert
-            Assert.That(result.IsValid, Is.False);  // Assert that validation fails
-            Assert.That(result.Errors, Has.One.Matches<ValidationFailure>(v => v.ErrorMessage == "Title is required."));
-        }
+        // Assert
+        Assert.That(result.IsValid, Is.False); // Assert that validation fails
+        Assert.That(result.Errors, Has.One.Matches<ValidationFailure>(v => v.ErrorMessage == "Metadata is required."));
+    }
 
-        [Test]
-        public void Should_Throw_ValidationException_When_Metadata_Is_Empty()
+    [Test]
+    public void Should_Throw_ValidationException_When_Description_Is_Empty()
+    {
+        // Arrange
+        var documentDto = new DocumentDto
         {
-            // Arrange
-            var documentDto = new DocumentDto
-            {
-                Title = "Title",
-                Metadata = null,  // Invalid metadata
-                Description = "Description"
-            };
+            Title = "Title",
+            Metadata = "Metadata",
+            Description = null // Invalid description
+        };
 
-            // Act
-            var result = _validator.Validate(documentDto);
+        // Act
+        var result = _validator.Validate(documentDto);
 
-            // Assert
-            Assert.That(result.IsValid, Is.False);  // Assert that validation fails
-            Assert.That(result.Errors, Has.One.Matches<ValidationFailure>(v => v.ErrorMessage == "Metadata is required."));
-        }
-
-        [Test]
-        public void Should_Throw_ValidationException_When_Description_Is_Empty()
-        {
-            // Arrange
-            var documentDto = new DocumentDto
-            {
-                Title = "Title",
-                Metadata = "Metadata",
-                Description = null  // Invalid description
-            };
-
-            // Act
-            var result = _validator.Validate(documentDto);
-
-            // Assert
-            Assert.That(result.IsValid, Is.False);  // Assert that validation fails
-            Assert.That(result.Errors, Has.One.Matches<ValidationFailure>(v => v.ErrorMessage == "Description is required."));
-        }
+        // Assert
+        Assert.That(result.IsValid, Is.False); // Assert that validation fails
+        Assert.That(result.Errors,
+            Has.One.Matches<ValidationFailure>(v => v.ErrorMessage == "Description is required."));
     }
 }
