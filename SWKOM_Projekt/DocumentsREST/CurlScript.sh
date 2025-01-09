@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Base URL
-BASE_URL="http://localhost:8081"
+BASE_URL="http://localhost"
 
 # Get All Documents
 echo "Getting all documents..."

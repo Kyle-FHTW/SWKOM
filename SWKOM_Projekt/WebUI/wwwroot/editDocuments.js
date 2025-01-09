@@ -14,7 +14,6 @@ function loadDocumentData() {
         })
         .then(doc => {
             document.getElementById('title').value = doc.title;
-            document.getElementById('metadata').value = doc.metadata;
             document.getElementById('description').value = doc.description;
             document.getElementById('documentForm').dataset.id = doc.id;
         })
@@ -28,13 +27,11 @@ function loadDocumentData() {
 function updateDocument() {
     const documentId = document.getElementById('documentForm').dataset.id;
     const title = document.getElementById('title').value;
-    const metadata = document.getElementById('metadata').value;
     const description = document.getElementById('description').value;
 
     const updatedDocument = {
         id: documentId,
         title,
-        metadata,
         description,
     };
 

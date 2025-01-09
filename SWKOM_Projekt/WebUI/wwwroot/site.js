@@ -30,7 +30,6 @@ function loadDocuments() {
                 row.innerHTML = `
                     <td>${doc.id}</td>
                     <td>${doc.title}</td>
-                    <td>${doc.metadata}</td>
                     <td>${doc.description}</td>
                 `;
 
