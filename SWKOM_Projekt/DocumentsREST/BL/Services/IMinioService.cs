@@ -1,8 +1,8 @@
-namespace DocumentsREST.BL.Services;
-
 public interface IMinioService
 {
-    Task EnsureBucketExistsAsync(string bucketName);
-    Task UploadFileAsync(string fileName, Stream data, long fileSize, string contentType);
-    Task<Stream> DownloadFileAsync(string fileName); // New method for downloading files
+    Task UploadFileAsync(string objectName, Stream fileStream, long fileSize, string contentType);
+    Task<Stream> DownloadFileAsync(string objectName);
+    
+    // New method to remove a file from MinIO
+    Task DeleteFileAsync(string objectName);
 }

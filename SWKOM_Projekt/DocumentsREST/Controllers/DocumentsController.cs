@@ -143,17 +143,35 @@ public class DocumentsController : ControllerBase
     {
         Log.Info($"Deleting document with ID: {id}");
 
+        // 1. Check if the document exists in the DB
         var document = await _documentService.GetDocumentByIdAsync(id);
         if (document == null)
         {
             Log.Warn($"Document with ID: {id} not found for deletion.");
             return NotFound();
         }
+        // 2. Remove the file from MinIO (use the same unique name used in Upload)
+        try
+        {
+            await _minioService.DeleteFileAsync(document.Title);
+            Log.Info($"File '{document.Title}' deleted from MinIO successfully.");
+        }
+        catch (Minio.Exceptions.ObjectNotFoundException)
+        {
+            Log.Warn($"File '{document.Title}' was not found in MinIO and could not be deleted.");
+        }
+        catch (Exception ex)
+        {
+            Log.Error($"Error deleting file '{document.Title}' from MinIO: {ex.Message}");
+        }
 
+        // 3. Delete from the DB
         await _documentService.DeleteDocumentAsync(id);
-        Log.Info($"Document with ID: {id} deleted successfully.");
+        Log.Info($"Document with ID: {id} deleted from the database successfully.");
+
         return Ok();
     }
+
     
     [HttpGet("documents/{id}/download")]
     public async Task<IActionResult> DownloadDocument(long id)

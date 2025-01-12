@@ -171,13 +171,25 @@ public class DocumentsControllerTests
         // Assert
         Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
     }
-
+    
     [Test]
     public async Task Delete_DocumentExists_ReturnsOk()
     {
         // Arrange
-        _mockDocumentService.Setup(s => s.GetDocumentByIdAsync(1)).ReturnsAsync(new Document { Id = 1 });
-        _mockDocumentService.Setup(s => s.DeleteDocumentAsync(1)).Returns(Task.CompletedTask);
+        // Provide a Title so the controller knows which file to delete from MinIO
+        _mockDocumentService
+            .Setup(s => s.GetDocumentByIdAsync(1))
+            .ReturnsAsync(new Document { Id = 1, Title = "SomeTitle" });
+
+        // Mock the DB delete
+        _mockDocumentService
+            .Setup(s => s.DeleteDocumentAsync(1))
+            .Returns(Task.CompletedTask);
+
+        // Mock the MinIO delete call
+        _mockMinioService
+            .Setup(s => s.DeleteFileAsync("SomeTitle"))
+            .Returns(Task.CompletedTask);
 
         // Act
         var result = await _controller.Delete(1);
